@@ -8,9 +8,11 @@ This wrapper sets sensible defaults for use with the scrypt package, it also gen
 
 #defaults
 
-defaultByteLength = 64 , used salt and password hash length
-defaultR = 16, number of rounds
-defaultN = 16384, CPU / Memory cost, needs to be power of 2
+Name  | Setting | Description
+------------- | -------------|-------
+defaultByteLength  | 64 | used salt and password hash length
+defaultR  | 16 | number of rounds
+defaultN  | 16384 | CPU / Memory cost, needs to be power of 2
 
 #Usage
 
