@@ -2,6 +2,8 @@
 
 An easy to use wrapper around https://godoc.org/golang.org/x/crypto/scrypt
 
+Extracted from a bigger application so this can be used by others if it helps.
+
 This wrapper sets sensible defaults for use with the scrypt package, it also generates a cryptographically secure pseudorandom number for a per password salt using crypto/rand.
 
 #defaults
