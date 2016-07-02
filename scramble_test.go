@@ -1,11 +1,9 @@
 package passwordHash
 
 import (
-	"bytes"
+	"crypto/subtle"
 	"fmt"
 	"testing"
-
-	// "git.dev.codingfidelity.com/pla/passwordHash"
 )
 
 func TestSaltGenerationReturnsErrorWhen0IsPassedIn(t *testing.T) {
@@ -98,14 +96,14 @@ func TestDecodeHashPayloadReturnsCorrectString(t *testing.T) {
 		t.Errorf("Error encountered, %v", err)
 	}
 
-	saltRes := bytes.Equal(salt, []byte("mysalt"))
-	pRes := bytes.Equal(p, []byte("mypassword"))
+	saltRes := subtle.ConstantTimeCompare(salt, []byte("mysalt"))
+	pRes := subtle.ConstantTimeCompare(p, []byte("mypassword"))
 
-	if !(saltRes == true) {
+	if !(saltRes == 1) {
 		t.Error("aggg fucked")
 	}
 
-	if !(pRes == true) {
+	if !(pRes == 1) {
 		t.Errorf("incorrect password hash decoded expected: mypassword but got %s", p)
 	}
 

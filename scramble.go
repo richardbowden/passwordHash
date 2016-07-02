@@ -1,7 +1,6 @@
 package passwordHash
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
@@ -9,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"crypto/subtle"
 	"golang.org/x/crypto/scrypt"
 )
 
@@ -105,7 +105,13 @@ func Validate(password string, hashPackage string) bool {
 
 	tmpHash, _ := scrypt.Key([]byte(password), salt, n, r, 1, keyLength)
 
-	res := bytes.Equal(tmpHash, passwordHash)
+	// res := bytes.Equal(tmpHash, passwordHash)
+	m := subtle.ConstantTimeCompare(tmpHash, passwordHash)
+
+	res := false
+	if m == 1 {
+		res = true
+	}
 
 	return res
 }
