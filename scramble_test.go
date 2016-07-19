@@ -158,7 +158,6 @@ func TestValidateReturnsTrueWhenValid(t *testing.T) {
 	hashedPayload, _ := Hash(pass, pass, 0, 0, 0, 0)
 
 	res := Validate(pass, hashedPayload)
-	fmt.Println(res)
 	if res != true {
 		t.Error("Password shoud be valid")
 	}
@@ -169,7 +168,6 @@ func TestValidateReturnsFalseWhenInvalid(t *testing.T) {
 	hashedPayload, _ := Hash(pass, pass, 0, 0, 0, 0)
 
 	res := Validate("aaa", hashedPayload)
-	fmt.Println(res)
 	if res != false {
 		t.Error("Password shoud be invalid")
 	}
