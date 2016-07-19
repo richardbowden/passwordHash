@@ -87,6 +87,10 @@ func Hash(p1 string, p2 string, rounds int, costParam int, saltByteLength int, h
 
 	dk, err := scrypt.Key([]byte(p1), salt, n, r, 1, keyLength)
 
+	if err != nil {
+		return "", err
+	}
+
 	return encodeHashPayload(r, n, keyLength, salt, dk), nil
 }
 
