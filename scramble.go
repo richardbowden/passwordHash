@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"crypto/subtle"
+
 	"golang.org/x/crypto/scrypt"
 )
 
@@ -64,7 +65,11 @@ func GenerateSalt(byteLength int) ([]byte, error) {
 //Hash derives a key from the password, rounds, costParam and generated salt and returns formatted string, this is required when the
 //password needs to be validated, this func allows the the params to be configured
 //returns a string as: r:n:keyLength:salt:hashedPassword
-func Hash(password string, rounds int, costParam int, saltByteLength int, hashByteLength int) (string, error) {
+func Hash(p1 string, p2 string, rounds int, costParam int, saltByteLength int, hashByteLength int) (string, error) {
+
+	if subtle.ConstantTimeCompare([]byte(p1), []byte(p2)) == 0 {
+		return "", errors.New("passwords do not match")
+	}
 
 	saltLength, err := getByteLength(saltByteLength)
 	keyLength, err := getByteLength(hashByteLength)
@@ -80,7 +85,7 @@ func Hash(password string, rounds int, costParam int, saltByteLength int, hashBy
 		return "", errors.New("failed to generate a cryptographic random string")
 	}
 
-	dk, err := scrypt.Key([]byte(password), salt, n, r, 1, keyLength)
+	dk, err := scrypt.Key([]byte(p1), salt, n, r, 1, keyLength)
 
 	return encodeHashPayload(r, n, keyLength, salt, dk), nil
 }
@@ -94,8 +99,8 @@ func Hash(password string, rounds int, costParam int, saltByteLength int, hashBy
 //default s (saltByteSize) = 64
 //
 //returns a string as: r:n:keyLength:salt:hashedPassword
-func HashWithDefaults(password string) (string, error) {
-	return Hash(password, 0, 0, 0, 0)
+func HashWithDefaults(pw1 string, pw2 string) (string, error) {
+	return Hash(pw1, pw2, 0, 0, 0, 0)
 }
 
 //Validate compares password against stored hash

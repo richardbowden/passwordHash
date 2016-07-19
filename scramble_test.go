@@ -155,7 +155,7 @@ func TestgetByteLengthReturnsThedefaultByteLength(t *testing.T) {
 
 func TestValidateReturnsTrueWhenValid(t *testing.T) {
 	pass := "mypassword"
-	hashedPayload, _ := Hash(pass, 0, 0, 0, 0)
+	hashedPayload, _ := Hash(pass, pass, 0, 0, 0, 0)
 
 	res := Validate(pass, hashedPayload)
 	fmt.Println(res)
@@ -166,7 +166,7 @@ func TestValidateReturnsTrueWhenValid(t *testing.T) {
 
 func TestValidateReturnsFalseWhenInvalid(t *testing.T) {
 	pass := "mypassword"
-	hashedPayload, _ := Hash(pass, 0, 0, 0, 0)
+	hashedPayload, _ := Hash(pass, pass, 0, 0, 0, 0)
 
 	res := Validate("aaa", hashedPayload)
 	fmt.Println(res)
