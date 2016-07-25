@@ -44,35 +44,15 @@ func TestSaltGeneration(t *testing.T) {
 	}
 }
 
-func TestGetNReturnsAValidDefaultCostValue(t *testing.T) {
-	//default cost 16384
-	res := getN(0)
-	if res != 16384 {
+func TestDefaultNConst(t *testing.T) {
+	if DefaultN != 16384 {
 		t.Error("Did not get default cost value 16384")
 	}
 }
 
-func TestGetNReturnsNoErrorWithAValidCostValue(t *testing.T) {
-	res := getN(512)
-
-	if res != 512 {
-		t.Error("did not returned expected value of 512")
-	}
-}
-
-func TestGetRReturnsDefault(t *testing.T) {
-	res := getR(0)
-
-	if res != 16 {
+func TestDefaultRConst(t *testing.T) {
+	if DefaultR != 16 {
 		t.Error("Failed to return the default number of rounds 16")
-	}
-}
-
-func TestGetRReturnsSpecifiedNumberOfRounds(t *testing.T) {
-	res := getR(28)
-
-	if res != 28 {
-		t.Error("Failed to return the set number of rounds 28")
 	}
 }
 
@@ -137,27 +117,18 @@ func TestDecodeHashPayloadReturnsErrorWhenPayloadContainsWrongNumberOfParts(t *t
 
 }
 
-func TestgetByteLengthReturnsErrorWhenByteSizeIsLessThan64(t *testing.T) {
-	_, err := getByteLength(31)
-	if err == nil {
-		t.Error("Should of returned an error for an int less than 64")
-	}
-}
+func TestDefaultKeyLength(t *testing.T) {
 
-func TestgetByteLengthReturnsThedefaultByteLength(t *testing.T) {
-	s, err := getByteLength(0)
-	if err != nil {
-	}
-	if s != 64 {
-		t.Error("Should of returned 64 as the default ByteSize")
+	if DefaultKeyByteLength != 64 {
+		t.Error("DefaultKeyByteLength did not return 64")
 	}
 }
 
 func TestValidateReturnsTrueWhenValid(t *testing.T) {
 	pass := "mypassword"
-	hashedPayload, _ := Hash(pass, pass, 0, 0, 0, 0)
+	hashedPayload, _ := Hash(pass, pass, DefaultR, DefaultN, DefaultSaltByteLength, DefaultKeyByteLength)
 
-	res := Validate(pass, hashedPayload)
+	res, _ := Validate(pass, hashedPayload)
 	if res != true {
 		t.Error("Password shoud be valid")
 	}
@@ -167,7 +138,7 @@ func TestValidateReturnsFalseWhenInvalid(t *testing.T) {
 	pass := "mypassword"
 	hashedPayload, _ := Hash(pass, pass, 0, 0, 0, 0)
 
-	res := Validate("aaa", hashedPayload)
+	res, _ := Validate("aaa", hashedPayload)
 	if res != false {
 		t.Error("Password shoud be invalid")
 	}
