@@ -30,9 +30,9 @@ import (
 func main() {
 	mypass := "mypassword"
 	fmt.Println("Test password=", mypass)
-	hashToStore, _ := passwordHash.HashWithDefaults(mypass)
+	hashToStore, _ := passwordHash.HashWithDefaults(mypass, mypass)
 
-	valid := passwordHash.Validate(mypass, hashToStore)
+	valid := passwordHash.Validate(mypass, mypass, hashToStore)
 
 	fmt.Printf("Password is valid=%v\n", valid)
 
