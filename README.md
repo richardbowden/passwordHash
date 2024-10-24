@@ -1,8 +1,5 @@
 #passwordHash
 
-[![Codeship Status](https://codeship.com/projects/a7cdabc0-3c9f-0133-8f33-3ebbb4d77cd4/status?branch=master)](https://codeship.com/projects/a7cdabc0-3c9f-0133-8f33-3ebbb4d77cd4/status?branch=master)
-
-
 An easy to use wrapper around https://godoc.org/golang.org/x/crypto/scrypt
 
 Extracted from a bigger application so this can be used by others if it helps.

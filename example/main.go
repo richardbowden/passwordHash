@@ -27,5 +27,5 @@ func main() {
 
 	isValid, err = passwordHash.Validate("invalid", hashed)
 
-	fmt.Printf("Password to be validated 'invalid password' against hashed password 'password1 is invalid: %v\n", isValid)
+	fmt.Printf("Password to be validated 'invalid' against hashed password 'password1 is invalid: %v\n", isValid)
 }
