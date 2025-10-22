@@ -1,5 +1,5 @@
 module github.com/richardbowden/passwordHash
 
-go 1.23.2
+go 1.24.0
 
-require golang.org/x/crypto v0.28.0
+require golang.org/x/crypto v0.43.0
