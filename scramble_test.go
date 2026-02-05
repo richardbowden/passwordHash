@@ -45,14 +45,20 @@ func TestSaltGeneration(t *testing.T) {
 }
 
 func TestDefaultNConst(t *testing.T) {
-	if DefaultN != 16384 {
-		t.Error("Did not get default cost value 16384")
+	if DefaultN != 131072 {
+		t.Error("Did not get default cost value 131072")
 	}
 }
 
 func TestDefaultRConst(t *testing.T) {
-	if DefaultR != 16 {
-		t.Error("Failed to return the default number of rounds 16")
+	if DefaultR != 8 {
+		t.Error("Failed to return the default block size 8")
+	}
+}
+
+func TestDefaultPConst(t *testing.T) {
+	if DefaultP != 1 {
+		t.Error("Failed to return the default parallelization parameter 1")
 	}
 }
 
@@ -70,7 +76,7 @@ func TestDecodeHashPayloadReturnsCorrectString(t *testing.T) {
 
 	hashPayload := "9:1111:64:bXlzYWx0:bXlwYXNzd29yZA=="
 
-	r, n, l, salt, p, err := decodeHashPaylaod(hashPayload)
+	r, n, l, salt, p, err := decodeHashPayload(hashPayload)
 
 	if err != nil {
 		t.Errorf("Error encountered, %v", err)
@@ -80,7 +86,7 @@ func TestDecodeHashPayloadReturnsCorrectString(t *testing.T) {
 	pRes := subtle.ConstantTimeCompare(p, []byte("mypassword"))
 
 	if !(saltRes == 1) {
-		t.Error("aggg fucked")
+		t.Errorf("incorrect salt decoded expected: mysalt but got %s", salt)
 	}
 
 	if !(pRes == 1) {
@@ -103,13 +109,13 @@ func TestDecodeHashPayloadReturnsErrorWhenPayloadContainsWrongNumberOfParts(t *t
 	toLong := "1:1:1:1:1:1:1"
 	toShort := "1:1"
 
-	_, _, _, _, _, err := decodeHashPaylaod(toLong)
+	_, _, _, _, _, err := decodeHashPayload(toLong)
 
 	if err == nil {
 		t.Error("Did not raise error for more then 4 sections")
 	}
 
-	_, _, _, _, _, err = decodeHashPaylaod(toShort)
+	_, _, _, _, _, err = decodeHashPayload(toShort)
 
 	if err == nil {
 		t.Error("Did not raise error for less then 4 sections")
@@ -147,6 +153,6 @@ func TestValidateReturnsFalseWhenInvalid(t *testing.T) {
 // Benchmarks
 func BenchmarkSaltGeneration(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_, _ = GenerateSalt(0)
+		_, _ = GenerateSalt(64)
 	}
 }

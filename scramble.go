@@ -22,20 +22,24 @@ const (
 	// generated
 	DefaultKeyByteLength = 64
 
-	// DefaultR is the number of rounds of hashing used to generated a hashed
-	// password
-	DefaultR = 16
+	// DefaultR is the block size parameter for scrypt. Standard value is 8.
+	// This affects memory usage and sequential read speed.
+	DefaultR = 8
 
 	// DefaultN is a CPU/memory cost parameter which must be a power of two
-	// greater than 1
-	DefaultN = 16384
+	// greater than 1. Set to 2^17 (131072) per OWASP 2026 recommendations.
+	// This results in approximately 128MB memory usage per hash operation.
+	DefaultN = 131072
+
+	// DefaultP is the parallelization parameter for scrypt. Standard value is 1.
+	DefaultP = 1
 
 	roundsIndex       = 0
 	costIndex         = 1
 	keyLengthIndex    = 2
 	saltIndex         = 3
 	passwordHashIndex = 4
-	seperator         = ":"
+	separator         = ":"
 )
 
 //GenerateSalt takes a byte size as an int, returns a secure random stirng to
@@ -55,16 +59,14 @@ func GenerateSalt(byteLength int) ([]byte, error) {
 //Hash hashes p1 (password) using r (rounds), n (costParam) and
 //a securely generated salt (see GenerateSalt func).
 //
-//p1 and p2 are compared using ConstantTimeCompare, if no match, err is returned.
+//Note: p2 parameter exists for backward compatibility. Password confirmation
+//should be handled at the application level, not in the hashing library.
+//Only p1 is used for hashing. Consider using HashWithDefaults for new code.
 //
 //A string in the following format is returned r:n:keyLength:salt:hashedPassword
 //
 //See Validate func for password validation
 func Hash(p1 string, p2 string, r int, n int, saltByteLength int, keyByteLength int) (string, error) {
-
-	if subtle.ConstantTimeCompare([]byte(p1), []byte(p2)) == 0 {
-		return "", errors.New("passwords do not match")
-	}
 
 	salt, err := GenerateSalt(saltByteLength)
 	if err != nil {
@@ -73,7 +75,7 @@ func Hash(p1 string, p2 string, r int, n int, saltByteLength int, keyByteLength 
 
 	// if any value is invalid or out of range scrypt.Key will return the
 	// correct error message
-	dk, err := scrypt.Key([]byte(p1), salt, n, r, 1, keyByteLength)
+	dk, err := scrypt.Key([]byte(p1), salt, n, r, DefaultP, keyByteLength)
 
 	if err != nil {
 		return "", err
@@ -82,12 +84,16 @@ func Hash(p1 string, p2 string, r int, n int, saltByteLength int, keyByteLength 
 	return encodeHashPayload(r, n, keyByteLength, salt, dk), nil
 }
 
-//HashWithDefaults is the same as Hash, but uses the default settings
+//HashWithDefaults is the same as Hash, but uses the default OWASP-compliant settings
 //
-//default r (rounds) = 16
-//default N (cpu/ memory cost) = 16386
+//default r (block size) = 8
+//default N (cpu/memory cost) = 131072 (2^17, ~128MB memory)
+//default p (parallelization) = 1
 //default h (hashByteSize) = 64
 //default s (saltByteSize) = 64
+//
+//Note: pw2 parameter exists for backward compatibility. Password confirmation
+//should be handled at the application level. Only pw1 is used for hashing.
 //
 //returns a string as: r:n:keyLength:salt:hashedPassword
 func HashWithDefaults(pw1 string, pw2 string) (string, error) {
@@ -105,42 +111,34 @@ func HashWithDefaults(pw1 string, pw2 string) (string, error) {
 //in question and investigate accordingly
 func Validate(password string, hashPackage string) (bool, error) {
 
-	r, n, keyLength, salt, passwordHash, err := decodeHashPaylaod(hashPackage)
+	r, n, keyLength, salt, passwordHash, err := decodeHashPayload(hashPackage)
 
 	if err != nil {
 		return false, fmt.Errorf("could not decode hashPackage, calling function should log more info, we dont log anything as to not leak data")
 	}
 
-	tmpHash, err := scrypt.Key([]byte(password), salt, n, r, 1, keyLength)
+	tmpHash, err := scrypt.Key([]byte(password), salt, n, r, DefaultP, keyLength)
 
 	if err != nil {
 		return false, fmt.Errorf("error creating hashed password for compare, calling function should log more info, we dont log anything as to not leak data")
 	}
 
-	m := subtle.ConstantTimeCompare(tmpHash, passwordHash)
-
-	res := false
-	if m == 1 {
-		res = true
-	}
-
-	return res, nil
+	return subtle.ConstantTimeCompare(tmpHash, passwordHash) == 1, nil
 }
 
 func encodeHashPayload(rounds, cost, keyLength int, salt, passwordHash []byte) string {
 	s := base64.StdEncoding.EncodeToString(salt)
 	p := base64.StdEncoding.EncodeToString(passwordHash)
 
-	// TODO use the const seperator when generating the encodedHash
 	payload := fmt.Sprintf("%d:%d:%d:%s:%s", rounds, cost, keyLength, s, p)
 	return payload
 }
 
-func decodeHashPaylaod(payload string) (rounds, cost, keyLength int, salt, passwordHash []byte, err error) {
-	split := strings.Split(payload, seperator)
+func decodeHashPayload(payload string) (rounds, cost, keyLength int, salt, passwordHash []byte, err error) {
+	split := strings.Split(payload, separator)
 
 	if len(split) < 5 || len(split) > 5 {
-		err = fmt.Errorf("invalid number of sections, expected=4, got=%d, we dont log anything as to not leak data", len(split))
+		err = fmt.Errorf("invalid number of sections, expected=5, got=%d, we dont log anything as to not leak data", len(split))
 		return
 	}
 

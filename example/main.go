@@ -8,24 +8,28 @@ import (
 )
 
 func main() {
-	p1 := "password1"
-	p2 := "password1"
+	password := "mypassword"
 
-	fmt.Printf("Passwords used in this example. pwd1: %s and pwd2: %s\n\n", p1, p2)
-
-	hashed, err := passwordHash.HashWithDefaults(p1, p2)
-
+	// Note: Second parameter is for backward compatibility only.
+	// Password confirmation should be done at application level.
+	hashToStore, err := passwordHash.HashWithDefaults(password, password)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error hashing password: %v\n", err)
 	}
 
-	fmt.Printf("Hashed Package: %v\n\n", hashed)
+	fmt.Printf("Hashed password: %s\n\n", hashToStore)
 
-	isValid, err := passwordHash.Validate("password1", hashed)
+	// Validate correct password
+	valid, err := passwordHash.Validate(password, hashToStore)
+	if err != nil {
+		log.Fatalf("Error validating password: %v\n", err)
+	}
+	fmt.Printf("Password '%s' is valid: %v\n", password, valid)
 
-	fmt.Printf("Password to be validated 'password1' agasint hashed password 'password1' is valid: %v\n", isValid)
-
-	isValid, err = passwordHash.Validate("invalid", hashed)
-
-	fmt.Printf("Password to be validated 'invalid' against hashed password 'password1 is invalid: %v\n", isValid)
+	// Validate incorrect password
+	valid, err = passwordHash.Validate("wrongpassword", hashToStore)
+	if err != nil {
+		log.Fatalf("Error validating password: %v\n", err)
+	}
+	fmt.Printf("Password 'wrongpassword' is valid: %v\n", valid)
 }
